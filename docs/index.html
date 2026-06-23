@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Analytics Assistant - Secure Multi-Agent BI</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon"><i class="fa-solid fa-brain-circuit"></i></div>
+                <div class="brand-text">
+                    <h1>Pipeline Analytics Assistant</h1>
+                    <span class="tag">Secure Multi-Agent BI Analyst</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="btn-api-config" class="btn btn-secondary">
+                    <i class="fa-solid fa-key"></i> Configure API Key
+                </button>
+                <div class="badge badge-success">
+                    <i class="fa-solid fa-shield-halved"></i> Guardrails Active
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-main">
+            <!-- Sidebar / Database Explorer -->
+            <section class="db-explorer">
+                <div class="explorer-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-database"></i> CRM Database Schema</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-info">
+                            <details open>
+                                <summary><strong>sales_reps</strong> <span class="table-size">(5 rows)</span></summary>
+                                <ul>
+                                    <li>rep_id <span class="col-type">INTEGER (PK)</span></li>
+                                    <li>name <span class="col-type">TEXT</span></li>
+                                    <li>region <span class="col-type">TEXT</span></li>
+                                    <li>quarterly_target <span class="col-type">REAL</span></li>
+                                </ul>
+                            </details>
+                            <details open>
+                                <summary><strong>deals</strong> <span class="table-size">(10 rows)</span></summary>
+                                <ul>
+                                    <li>deal_id <span class="col-type">INTEGER (PK)</span></li>
+                                    <li>name <span class="col-type">TEXT</span></li>
+                                    <li>amount <span class="col-type">REAL</span></li>
+                                    <li>stage <span class="col-type">TEXT ('Closed Won', 'Proposal'...)</span></li>
+                                    <li>close_date <span class="col-type">TEXT</span></li>
+                                    <li>rep_id <span class="col-type">INTEGER (FK)</span></li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="explorer-card database-live-view">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-table"></i> Live CRM Database Records</h2>
+                    </div>
+                    <div class="card-body scrollable-y">
+                        <div class="records-container">
+                            <h3>Sales Representatives</h3>
+                            <table class="db-table">
+                               <thead>
+                                   <tr><th>ID</th><th>Name</th><th>Region</th><th>Target</th></tr>
+                               </thead>
+                               <tbody>
+                                   <tr><td>1</td><td>Alice Smith</td><td>North America</td><td>$150k</td></tr>
+                                   <tr><td>2</td><td>Bob Jones</td><td>North America</td><td>$120k</td></tr>
+                                   <tr><td>3</td><td>Charlie Brown</td><td>Europe</td><td>$180k</td></tr>
+                                   <tr><td>4</td><td>Diana Prince</td><td>Europe</td><td>$160k</td></tr>
+                                   <tr><td>5</td><td>Ethan Hunt</td><td>Asia Pacific</td><td>$140k</td></tr>
+                               </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Agent Chat & Workflow Logs -->
+            <section class="agent-workspace">
+                <div class="workspace-header">
+                    <h2><i class="fa-solid fa-network-wired"></i> Conversational BI Agent</h2>
+                </div>
+                <div class="chat-history" id="chat-history">
+                    <!-- Welcome message -->
+                    <div class="message system-message">
+                        <div class="message-icon"><i class="fa-solid fa-robot"></i></div>
+                        <div class="message-content">
+                            <p>Welcome! I am your Pipeline Analytics Assistant. I can securely run read-only database queries and compile strategic reports. Try asking one of the examples below!</p>
+                            <div class="suggestions">
+                                <button class="btn-suggestion">Which sales representatives are currently below their targets?</button>
+                                <button class="btn-suggestion">Show our total revenue from closed won deals by region.</button>
+                                <button class="btn-suggestion">Delete all records from the deals table.</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-tracker" id="workflow-tracker">
+                    <div class="step-badge" id="step-1"><span class="step-num">1</span> Security Check</div>
+                    <div class="step-badge" id="step-2"><span class="step-num">2</span> SQL Specialist</div>
+                    <div class="step-badge" id="step-3"><span class="step-num">3</span> Local SQL Query</div>
+                    <div class="step-badge" id="step-4"><span class="step-num">4</span> BI Analyst</div>
+                </div>
+
+                <div class="chat-input-bar">
+                    <input type="text" id="input-query" placeholder="Ask about sales, reps, targets, or deals..." autocomplete="off">
+                    <button id="btn-submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- API Config Modal -->
+    <div class="modal-overlay" id="api-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-key"></i> Set Google AI Studio API Key</h3>
+                <button class="btn-close" id="btn-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>To run real database queries using live Gemini models, enter your <strong>Google AI Studio API Key</strong>. The key is saved securely in your local browser storage and is never uploaded anywhere else.</p>
+                <div class="form-group">
+                    <label for="api-key-input">API Key:</label>
+                    <input type="password" id="api-key-input" placeholder="AIzaSy...">
+                </div>
+                <p class="help-text">Don't have a key? You can get a free one from the <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio Developer Portal</a>.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-save-key-no">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-key-yes">Save Key</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
