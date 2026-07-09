@@ -115,8 +115,8 @@ function isSqlSafe(query) {
 function executeSqlLocally(sql) {
     const normalized = sql.toLowerCase();
     
-    // 1. Performance targets query
-    if (normalized.includes("quarterly_target") && normalized.includes("closed won")) {
+    // 1. Performance targets query — unique marker: "quarterly_target" + "having"
+    if (normalized.includes("quarterly_target") && normalized.includes("having")) {
         const results = [
             { name: "Alice Smith", target: 150000, achieved: 85000 },
             { name: "Diana Prince", target: 160000, achieved: 60000 },
@@ -125,18 +125,8 @@ function executeSqlLocally(sql) {
         return formatHtmlTable(["Sales Rep", "Target", "Achieved Amount"], results.map(r => [r.name, `$${r.target.toLocaleString()}`, `$${r.achieved.toLocaleString()}`]));
     }
     
-    // 2. Revenue by region query
-    if (normalized.includes("region") && normalized.includes("amount")) {
-        const results = [
-            { region: "North America", revenue: 205000 },
-            { region: "Europe", revenue: 270000 },
-            { region: "Asia Pacific", revenue: 95000 }
-        ];
-        return formatHtmlTable(["Region", "Closed Won Revenue"], results.map(r => [r.region, `$${r.revenue.toLocaleString()}`]));
-    }
-    
-    // 3. Deal pipeline summary
-    if (normalized.includes("stage") && normalized.includes("count")) {
+    // 2. Deal pipeline summary — unique marker: "count(*)" + "group by stage"
+    if (normalized.includes("count(*)") && normalized.includes("group by stage")) {
         const results = [
             { stage: "Closed Won", count: 5, total: 570000 },
             { stage: "Proposal", count: 2, total: 205000 },
@@ -146,8 +136,8 @@ function executeSqlLocally(sql) {
         return formatHtmlTable(["Stage", "Deal Count", "Total Value"], results.map(r => [r.stage, r.count, `$${r.total.toLocaleString()}`]));
     }
     
-    // 4. Recent interactions / activity log
-    if (normalized.includes("interactions") || normalized.includes("activity") || normalized.includes("notes")) {
+    // 3. Recent interactions — unique marker: "interactions as i"
+    if (normalized.includes("interactions") && normalized.includes("i.date")) {
         const results = [
             { date: "2026-06-21", rep: "Diana Prince", type: "Call", deal: "Eta Corp Data Warehouse", notes: "Discussed customization requirements" },
             { date: "2026-06-20", rep: "Alice Smith", type: "Email", deal: "Beta Industries License Renew", notes: "Sent formal proposal" },
@@ -158,8 +148,8 @@ function executeSqlLocally(sql) {
         return formatHtmlTable(["Date", "Sales Rep", "Type", "Deal", "Notes"], results.map(r => [r.date, r.rep, r.type, r.deal, r.notes]));
     }
     
-    // 5. Top performing reps
-    if (normalized.includes("top") || normalized.includes("best") || normalized.includes("desc")) {
+    // 4. Top performing reps — unique marker: "order by revenue desc"
+    if (normalized.includes("order by revenue desc") && normalized.includes("closed won")) {
         const results = [
             { name: "Charlie Brown", region: "Europe", revenue: 210000, pct: "116.7%" },
             { name: "Bob Jones", region: "North America", revenue: 120000, pct: "100.0%" },
@@ -168,13 +158,23 @@ function executeSqlLocally(sql) {
         return formatHtmlTable(["Sales Rep", "Region", "Closed Won Revenue", "% of Target"], results.map(r => [r.name, r.region, `$${r.revenue.toLocaleString()}`, r.pct]));
     }
     
-    // 6. All deals listing
-    if (normalized.includes("deals") || normalized.includes("deal_id")) {
+    // 5. Revenue by region — unique marker: "group by region"
+    if (normalized.includes("group by region")) {
+        const results = [
+            { region: "North America", revenue: 205000 },
+            { region: "Europe", revenue: 270000 },
+            { region: "Asia Pacific", revenue: 95000 }
+        ];
+        return formatHtmlTable(["Region", "Closed Won Revenue"], results.map(r => [r.region, `$${r.revenue.toLocaleString()}`]));
+    }
+    
+    // 6. All deals listing — unique marker: "order by amount desc"
+    if (normalized.includes("order by amount")) {
         return formatHtmlTable(["Deal", "Amount", "Stage", "Close Date"], 
             DB_RECORDS.deals.map(d => [d.name, `$${d.amount.toLocaleString()}`, d.stage, d.close_date]));
     }
     
-    // Fallback
+    // Fallback — show sales reps overview
     return formatHtmlTable(["Name", "Region", "Quarterly Target"],
         DB_RECORDS.sales_reps.map(r => [r.name, r.region, `$${r.quarterly_target.toLocaleString()}`]));
 }
@@ -314,8 +314,8 @@ async function processQuery(queryText) {
             if (q.includes("target") || q.includes("below") || q.includes("underperform")) {
                 sqlQuery = "SELECT s.name, s.quarterly_target, SUM(d.amount) AS achieved FROM sales_reps AS s LEFT JOIN deals AS d ON s.rep_id = d.rep_id AND d.stage = 'Closed Won' GROUP BY s.rep_id HAVING achieved < s.quarterly_target;";
                 explanation = "Calculates targets vs. closed won revenue for underperforming sales reps.";
-            } else if (q.includes("pipeline") || q.includes("stage") || q.includes("breakdown") || q.includes("summary")) {
-                sqlQuery = "SELECT stage, COUNT(*) AS count, SUM(amount) AS total FROM deals GROUP BY stage ORDER BY total DESC;";
+            } else if (q.includes("pipeline") || q.includes("breakdown") || q.includes("stage")) {
+                sqlQuery = "SELECT stage, COUNT(*) AS deal_count, SUM(amount) AS total FROM deals GROUP BY stage ORDER BY total DESC;";
                 explanation = "Groups all deals by their pipeline stage with counts and total values.";
             } else if (q.includes("interaction") || q.includes("activity") || q.includes("recent") || q.includes("communication")) {
                 sqlQuery = "SELECT i.date, s.name, i.type, d.name AS deal, i.notes FROM interactions AS i JOIN deals AS d ON i.deal_id = d.deal_id JOIN sales_reps AS s ON d.rep_id = s.rep_id ORDER BY i.date DESC;";
@@ -323,7 +323,10 @@ async function processQuery(queryText) {
             } else if (q.includes("top") || q.includes("best") || q.includes("performer") || q.includes("ranking")) {
                 sqlQuery = "SELECT s.name, s.region, SUM(d.amount) AS revenue FROM sales_reps AS s JOIN deals AS d ON s.rep_id = d.rep_id AND d.stage = 'Closed Won' GROUP BY s.rep_id ORDER BY revenue DESC;";
                 explanation = "Ranks sales reps by total closed won revenue.";
-            } else if (q.includes("deal") || q.includes("opportunity") || q.includes("all")) {
+            } else if (q.includes("region") || q.includes("revenue")) {
+                sqlQuery = "SELECT region, SUM(amount) AS revenue FROM deals WHERE stage = 'Closed Won' GROUP BY region;";
+                explanation = "Sums closed won deal amounts grouped by region.";
+            } else if (q.includes("deal") || q.includes("opportunity")) {
                 sqlQuery = "SELECT name, amount, stage, close_date FROM deals ORDER BY amount DESC;";
                 explanation = "Lists all deals sorted by value.";
             } else {
