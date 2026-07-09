@@ -66,6 +66,20 @@ function detectPromptInjection(text) {
     return keywords.some(kw => lowered.includes(kw));
 }
 
+function detectDangerousSqlIntent(text) {
+    const dangerousKeywords = [
+        "delete", "drop", "truncate", "insert", "update", "alter",
+        "create", "replace", "exec", "grant", "revoke", "modify",
+        "remove", "destroy", "wipe", "erase", "purge"
+    ];
+    const lowered = text.toLowerCase();
+    const matched = dangerousKeywords.find(kw => {
+        const regex = new RegExp(`\\b${kw}\\b`);
+        return regex.test(lowered);
+    });
+    return matched || null;
+}
+
 function isSqlSafe(query) {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return false;
@@ -184,6 +198,13 @@ async function processQuery(queryText) {
     if (detectPromptInjection(queryText)) {
         setStepState(1, "failed");
         appendSystemMessage("Security Blocked", `<div class="security-log"><span style="color:var(--danger)">[CRITICAL]</span> PROMPT INJECTION DETECTED. Execution aborted.</div>`);
+        return;
+    }
+
+    const dangerousWord = detectDangerousSqlIntent(queryText);
+    if (dangerousWord) {
+        setStepState(1, "failed");
+        appendSystemMessage("Security Blocked", `<div class="security-log"><span style="color:var(--danger)">[CRITICAL]</span> UNSAFE DATABASE OPERATION DETECTED.<br>Your query contains the forbidden keyword: <code>${dangerousWord.toUpperCase()}</code>.<br>This system only permits <strong>read-only SELECT queries</strong>. All write, modify, and destructive operations are blocked by the AST-level SQL guardrail.<br><br><span style="color:var(--warning)">⚠️ Security Log:</span> This attempt has been flagged and recorded.</div>`);
         return;
     }
     
