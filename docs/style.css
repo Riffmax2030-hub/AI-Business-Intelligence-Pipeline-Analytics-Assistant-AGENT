@@ -563,3 +563,47 @@ body {
     font-size: 11px;
     margin-top: 8px;
 }
+
+/* Security Audit Log Panel */
+.security-log-entries {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.security-log-entries .log-entry {
+    padding: 3px 0;
+    border-bottom: 1px solid hsla(220, 20%, 25%, 0.2);
+    animation: logFadeIn 0.3s ease;
+}
+
+.security-log-entries .log-time {
+    color: var(--text-secondary);
+    margin: 0 4px;
+    font-size: 9px;
+}
+
+@keyframes logFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Disabled input state */
+#input-query:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#btn-submit:disabled {
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .dashboard-main {
+        grid-template-columns: 1fr;
+    }
+    .db-explorer {
+        display: none;
+    }
+}

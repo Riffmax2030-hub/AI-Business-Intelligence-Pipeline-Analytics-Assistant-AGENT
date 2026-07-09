@@ -64,6 +64,16 @@
                                     <li>rep_id <span class="col-type">INTEGER (FK)</span></li>
                                 </ul>
                             </details>
+                            <details>
+                                <summary><strong>interactions</strong> <span class="table-size">(5 rows)</span></summary>
+                                <ul>
+                                    <li>interaction_id <span class="col-type">INTEGER (PK)</span></li>
+                                    <li>deal_id <span class="col-type">INTEGER (FK)</span></li>
+                                    <li>date <span class="col-type">TEXT</span></li>
+                                    <li>type <span class="col-type">TEXT ('Meeting', 'Call', 'Email')</span></li>
+                                    <li>notes <span class="col-type">TEXT</span></li>
+                                </ul>
+                            </details>
                         </div>
                     </div>
                 </div>
@@ -90,6 +100,17 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="explorer-card security-log-panel">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-shield-halved"></i> Security Audit Log</h2>
+                    </div>
+                    <div class="card-body scrollable-y" style="max-height:200px;">
+                        <div id="security-log-entries" class="security-log-entries">
+                            <div class="log-entry" style="color:var(--text-secondary); font-style:italic;">Waiting for queries...</div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Agent Chat & Workflow Logs -->
@@ -106,6 +127,9 @@
                             <div class="suggestions">
                                 <button class="btn-suggestion">Which sales representatives are currently below their targets?</button>
                                 <button class="btn-suggestion">Show our total revenue from closed won deals by region.</button>
+                                <button class="btn-suggestion">Give me a deal pipeline breakdown by stage.</button>
+                                <button class="btn-suggestion">Show recent sales activity and interactions.</button>
+                                <button class="btn-suggestion">Who are the top performing reps?</button>
                                 <button class="btn-suggestion">Delete all records from the deals table.</button>
                             </div>
                         </div>
